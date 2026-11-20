@@ -1,0 +1,1695 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Puzzlebazar Bangladesh — Invoice Generator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+      :root {
+        --brand: #079e8d;
+        --brand-dark: #04695d;
+        --brand-darker: #034e44;
+        --brand-light: #e4f6f4;
+        --brand-tint: #f0faf9;
+        --ink: #12211f;
+        --ink-soft: #4b5f5c;
+        --ink-faint: #8aa09d;
+        --border: #dce8e6;
+        --bg: #f5faf9;
+        --warm: #e0663e;
+        --radius: 10px;
+        --font-body: "Inter", "Noto Sans Bengali", sans-serif;
+        --font-display:
+          "Space Grotesk", "Inter", "Noto Sans Bengali", sans-serif;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: var(--font-body);
+        background: var(--bg);
+        color: var(--ink);
+        -webkit-font-smoothing: antialiased;
+      }
+      button {
+        font-family: inherit;
+        cursor: pointer;
+      }
+      input,
+      select,
+      textarea {
+        font-family: inherit;
+      }
+      :focus-visible {
+        outline: 2px solid var(--brand-dark);
+        outline-offset: 2px;
+      }
+
+      /* ---------------- App header ---------------- */
+      .app-header {
+        background: linear-gradient(135deg, var(--brand-darker), var(--brand));
+        color: #fff;
+        padding: 16px 24px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        position: sticky;
+        top: 0;
+        z-index: 30;
+        box-shadow: 0 2px 12px rgba(3, 78, 68, 0.25);
+      }
+      .app-header h1 {
+        font-family: var(--font-display);
+        font-size: 18px;
+        margin: 0;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+      }
+      .app-header p {
+        margin: 2px 0 0;
+        font-size: 12px;
+        color: #b7e8e1;
+      }
+      .cube {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(3, 1fr);
+        gap: 3px;
+        width: 34px;
+        height: 34px;
+        flex: none;
+      }
+      .cube span {
+        border-radius: 2px;
+        display: block;
+      }
+
+      /* ---------------- Layout ---------------- */
+      .layout {
+        max-width: 1340px;
+        margin: 0 auto;
+        padding: 24px;
+        display: grid;
+        grid-template-columns: minmax(380px, 500px) 1fr;
+        gap: 24px;
+        align-items: start;
+      }
+      @media (max-width: 980px) {
+        .layout {
+          grid-template-columns: 1fr;
+          padding: 14px;
+        }
+      }
+      .preview-col {
+        position: sticky;
+        top: 90px;
+        min-width: 0;
+      }
+      @media (max-width: 980px) {
+        .preview-col {
+          position: static;
+        }
+      }
+      .form-col {
+        min-width: 0;
+      }
+
+      .card {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 18px;
+        margin-bottom: 14px;
+        box-shadow: 0 1px 2px rgba(18, 33, 31, 0.05);
+      }
+      .card h2 {
+        font-family: var(--font-display);
+        font-size: 14px;
+        margin: 0 0 14px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .card h2 .step {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: var(--brand);
+        color: #fff;
+        font-size: 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+      }
+
+      .field {
+        margin-bottom: 12px;
+      }
+      .field:last-child {
+        margin-bottom: 0;
+      }
+      .field label {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--ink-soft);
+        margin-bottom: 5px;
+      }
+      .field label .req {
+        color: var(--warm);
+      }
+      input[type="text"],
+      input[type="tel"],
+      input[type="email"],
+      input[type="number"],
+      input[type="date"],
+      select,
+      textarea {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 14px;
+        background: var(--bg);
+        color: var(--ink);
+        transition:
+          border-color 0.15s,
+          background 0.15s,
+          box-shadow 0.15s;
+      }
+      input:focus,
+      select:focus,
+      textarea:focus {
+        border-color: var(--brand);
+        background: #fff;
+        box-shadow: 0 0 0 3px rgba(7, 158, 141, 0.15);
+        outline: none;
+      }
+      textarea {
+        resize: vertical;
+        min-height: 62px;
+      }
+      .grid2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      @media (max-width: 420px) {
+        .grid2 {
+          grid-template-columns: 1fr;
+        }
+      }
+      .invalid {
+        border-color: var(--warm) !important;
+        box-shadow: 0 0 0 3px rgba(224, 102, 62, 0.15) !important;
+      }
+
+      /* ---------------- Product rows ---------------- */
+      .prod {
+        display: grid;
+        grid-template-columns: 72px 1fr 30px;
+        gap: 12px;
+        padding: 12px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        margin-bottom: 10px;
+        background: var(--brand-tint);
+        align-items: start;
+      }
+      .img-drop {
+        width: 72px;
+        height: 72px;
+        border: 1.5px dashed #9fd7ce;
+        border-radius: 10px;
+        background: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        overflow: hidden;
+        color: var(--brand-dark);
+        transition:
+          background 0.15s,
+          border-color 0.15s;
+      }
+      .img-drop:hover {
+        background: var(--brand-light);
+        border-color: var(--brand);
+      }
+      .img-drop.has {
+        border-style: solid;
+        border-color: var(--border);
+      }
+      .img-drop img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+      .img-ph {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 3px;
+        font-size: 11px;
+        font-weight: 600;
+      }
+      .prod-fields input[type="text"] {
+        margin-bottom: 8px;
+        background: #fff;
+      }
+      .row2 {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 8px;
+      }
+      .money {
+        position: relative;
+      }
+      .money span {
+        position: absolute;
+        left: 11px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--ink-faint);
+        font-size: 14px;
+        pointer-events: none;
+      }
+      .money input {
+        padding-left: 26px !important;
+        background: #fff !important;
+      }
+      .qty {
+        display: flex;
+        align-items: center;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: #fff;
+        overflow: hidden;
+      }
+      .qty button {
+        width: 30px;
+        height: 38px;
+        border: none;
+        background: transparent;
+        font-size: 16px;
+        color: var(--ink-soft);
+      }
+      .qty button:hover {
+        background: var(--brand-light);
+        color: var(--brand-dark);
+      }
+      .qty input {
+        width: 42px !important;
+        text-align: center;
+        border: none !important;
+        border-radius: 0 !important;
+        padding: 8px 0 !important;
+        background: #fff !important;
+        box-shadow: none !important;
+        -moz-appearance: textfield;
+      }
+      .qty input::-webkit-outer-spin-button,
+      .qty input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      .remove {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        border: none;
+        background: #fff;
+        color: var(--ink-faint);
+        font-size: 12px;
+        border: 1px solid var(--border);
+      }
+      .remove:hover:not(:disabled) {
+        background: #fbeae3;
+        color: var(--warm);
+        border-color: #f3c9b9;
+      }
+      .remove:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        padding: 11px 16px;
+        border-radius: 9px;
+        border: 1px solid transparent;
+        transition:
+          background 0.15s,
+          transform 0.1s,
+          box-shadow 0.15s;
+      }
+      .btn:active {
+        transform: translateY(1px);
+      }
+      .btn-primary {
+        background: var(--brand);
+        color: #fff;
+        box-shadow: 0 2px 6px rgba(7, 158, 141, 0.3);
+      }
+      .btn-primary:hover:not(:disabled) {
+        background: var(--brand-dark);
+      }
+      .btn-primary:disabled {
+        opacity: 0.7;
+        cursor: wait;
+      }
+      .btn-ghost {
+        background: #fff;
+        color: var(--ink);
+        border-color: var(--border);
+      }
+      .btn-ghost:hover {
+        border-color: var(--brand);
+        color: var(--brand-dark);
+      }
+      .btn-dashed {
+        width: 100%;
+        background: #fff;
+        color: var(--brand-dark);
+        border: 1.5px dashed #9fd7ce;
+      }
+      .btn-dashed:hover {
+        background: var(--brand-light);
+        border-color: var(--brand);
+      }
+      .mini-total {
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+        margin-top: 12px;
+        color: var(--ink-soft);
+      }
+      .mini-total strong {
+        color: var(--ink);
+        font-family: var(--font-display);
+      }
+
+      details.card summary {
+        cursor: pointer;
+        font-family: var(--font-display);
+        font-weight: 600;
+        font-size: 14px;
+        list-style: none;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      details.card summary::-webkit-details-marker {
+        display: none;
+      }
+      details.card summary::after {
+        content: "+";
+        font-size: 18px;
+        color: var(--brand-dark);
+      }
+      details.card[open] summary::after {
+        content: "–";
+      }
+      details.card .inner {
+        margin-top: 14px;
+      }
+      .logo-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .logo-thumb {
+        width: 56px;
+        height: 56px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: var(--bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        flex: none;
+      }
+      .logo-thumb img {
+        max-width: 100%;
+        max-height: 100%;
+      }
+      .link-btn {
+        background: none;
+        border: none;
+        color: var(--warm);
+        font-size: 12px;
+        font-weight: 600;
+        padding: 0;
+      }
+      .hint {
+        font-size: 11.5px;
+        color: var(--ink-faint);
+        margin-top: 6px;
+      }
+
+      .actions {
+        position: sticky;
+        bottom: 0;
+        background: rgba(245, 250, 249, 0.94);
+        backdrop-filter: blur(6px);
+        padding: 12px 0 6px;
+        display: flex;
+        gap: 10px;
+        z-index: 10;
+      }
+      .actions .btn-primary {
+        flex: 1;
+      }
+
+      .preview-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+      }
+      .preview-head h2 {
+        font-family: var(--font-display);
+        font-size: 14px;
+        margin: 0;
+      }
+      .preview-head span {
+        font-size: 11px;
+        font-weight: 600;
+        background: var(--brand-light);
+        color: var(--brand-dark);
+        padding: 3px 9px;
+        border-radius: 20px;
+      }
+      .preview-stage {
+        width: 100%;
+        overflow: hidden;
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        box-shadow: 0 10px 30px rgba(18, 33, 31, 0.1);
+      }
+
+      #toast {
+        position: fixed;
+        left: 50%;
+        bottom: 24px;
+        transform: translateX(-50%) translateY(20px);
+        background: var(--ink);
+        color: #fff;
+        padding: 11px 18px;
+        border-radius: 10px;
+        font-size: 13.5px;
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.25s;
+        z-index: 100;
+        max-width: 90vw;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+      }
+      #toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+      #toast.error {
+        background: #b14444;
+      }
+
+      /* =====================================================
+     INVOICE (self-contained: no dependency on parent styles)
+     ===================================================== */
+      .invoice {
+        width: 210mm;
+        min-height: 1086px;
+        background: #fff;
+        color: #12211f;
+        font-family: "Inter", "Noto Sans Bengali", sans-serif;
+        font-size: 13px;
+        line-height: 1.45;
+        display: flex;
+        flex-direction: column;
+      }
+      .invoice * {
+        box-sizing: border-box;
+      }
+      .inv-top {
+        background: linear-gradient(135deg, #034e44 0%, #079e8d 100%);
+        color: #fff;
+        padding: 34px 40px 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .inv-brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      .inv-logo-chip {
+        /* background: #fff; */
+        border-radius: 12px;
+        padding: 7px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 56px;
+        height: 56px;
+      }
+      .inv-logo-chip img {
+        max-height: 42px;
+        max-width: 120px;
+        display: block;
+      }
+      .inv-cube {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(3, 1fr);
+        gap: 3px;
+        width: 42px;
+        height: 42px;
+      }
+      .inv-cube span {
+        display: block;
+        border-radius: 2px;
+      }
+      .inv-shop {
+        font-size: 22px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        line-height: 1.15;
+      }
+      .inv-tag {
+        font-size: 12px;
+        color: #b7e8e1;
+        margin-top: 3px;
+      }
+      .inv-title {
+        text-align: right;
+      }
+      .inv-word {
+        font-size: 30px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        line-height: 1;
+      }
+      .inv-no {
+        font-size: 13px;
+        color: #cff1ec;
+        margin-top: 8px;
+        font-weight: 500;
+      }
+
+      .inv-body {
+        padding: 30px 40px 10px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      .inv-meta {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 26px;
+      }
+      .inv-meta-box {
+        flex: 1;
+        background: #f0faf9;
+        border-radius: 12px;
+        padding: 14px 16px;
+        border: 1px solid #dce8e6;
+      }
+      .inv-label {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+        color: #04695d;
+        margin-bottom: 6px;
+      }
+      .inv-meta-box .v {
+        font-size: 14px;
+        font-weight: 600;
+        color: #12211f;
+      }
+      .inv-meta-box .s {
+        font-size: 12.5px;
+        color: #4b5f5c;
+        margin-top: 2px;
+        word-break: break-word;
+      }
+      .inv-muted {
+        color: #8aa09d !important;
+        font-weight: 500 !important;
+      }
+      .badge {
+        display: inline-block;
+        font-size: 10.5px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        padding: 4px 10px;
+        border-radius: 20px;
+        margin-top: 6px;
+      }
+      .badge.paid {
+        background: #d3f0eb;
+        color: #04695d;
+      }
+      .badge.partial {
+        background: #fbf1e1;
+        color: #a56f18;
+      }
+      .badge.unpaid {
+        background: #fbeae3;
+        color: #c0502b;
+      }
+
+      .inv-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .inv-table thead th {
+        background: #f0faf9;
+        color: #04695d;
+        font-size: 10.5px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        padding: 10px 12px;
+        text-align: left;
+        border-bottom: 2px solid #079e8d;
+      }
+      .inv-table th.r,
+      .inv-table td.r {
+        text-align: right;
+      }
+      .inv-table th.c,
+      .inv-table td.c {
+        text-align: center;
+      }
+      .inv-table td {
+        padding: 12px;
+        border-bottom: 1px solid #e6efed;
+        vertical-align: middle;
+      }
+      .inv-table tr {
+        page-break-inside: avoid;
+      }
+      .inv-table .pname {
+        font-weight: 600;
+        font-size: 13.5px;
+      }
+      .thumb {
+        width: 54px;
+        height: 54px;
+        border-radius: 8px;
+        display: block;
+        border: 1px solid #dce8e6;
+      }
+      .thumb-empty {
+        width: 54px;
+        height: 54px;
+        border-radius: 8px;
+        background: #f0faf9;
+        border: 1px dashed #bfdcd7;
+      }
+      .inv-empty {
+        text-align: center;
+        color: #8aa09d;
+        padding: 28px 12px !important;
+      }
+
+      .inv-lower {
+        display: flex;
+        justify-content: space-between;
+        gap: 30px;
+        margin-top: 22px;
+      }
+      .inv-notes {
+        flex: 1;
+        font-size: 12px;
+        color: #4b5f5c;
+      }
+      .inv-notes .txt {
+        margin-top: 2px;
+      }
+      .totals {
+        width: 290px;
+        flex: none;
+      }
+      .t-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 6px 0;
+        font-size: 13px;
+        color: #4b5f5c;
+      }
+      .t-row b {
+        color: #12211f;
+        font-weight: 600;
+      }
+      .t-grand {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #079e8d;
+        color: #fff;
+        border-radius: 10px;
+        padding: 13px 15px;
+        margin: 8px 0;
+        font-size: 15px;
+        font-weight: 700;
+      }
+      .t-grand span:last-child {
+        font-size: 18px;
+      }
+      .t-due {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 2px 0;
+        font-size: 14px;
+        font-weight: 700;
+        color: #c0502b;
+        border-top: 1px dashed #bfdcd7;
+        margin-top: 6px;
+      }
+      .t-due.clear {
+        color: #04695d;
+      }
+
+      .inv-footer {
+        margin-top: auto;
+        padding: 0 40px 30px;
+      }
+      .inv-thanks {
+        border-top: 2px solid #079e8d;
+        padding-top: 16px;
+        text-align: center;
+      }
+      .inv-thanks .t1 {
+        font-size: 14px;
+        font-weight: 700;
+        color: #04695d;
+      }
+      .inv-thanks .t2 {
+        font-size: 12.5px;
+        color: #4b5f5c;
+        margin-top: 3px;
+      }
+      .inv-contact {
+        font-size: 11.5px;
+        color: #4b5f5c;
+        margin-top: 10px;
+      }
+      .inv-auto {
+        font-size: 10px;
+        color: #8aa09d;
+        margin-top: 8px;
+      }
+      .avoid-break {
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="cube" id="hdr-cube"> </div>
+      <div>
+        <h1>Puzzlebazar Bangladesh</h1>
+        <p>Invoice generator &middot; fill the form, download a PDF</p>
+      </div>
+    </header>
+
+    <div class="layout">
+      <!-- ===================== FORM ===================== -->
+      <form
+        class="form-col"
+        id="form"
+        onsubmit="return false;"
+        autocomplete="off"
+      >
+        <div class="card">
+          <h2><span class="step">1</span> Invoice details</h2>
+          <div class="grid2">
+            <div class="field">
+              <label for="inv-no">Invoice number</label
+              ><input type="text" id="inv-no" />
+            </div>
+            <div class="field">
+              <label for="inv-date">Date</label
+              ><input type="date" id="inv-date" />
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2><span class="step">2</span> Customer</h2>
+          <div class="field">
+            <label for="cust-name">Name <span class="req">*</span></label
+            ><input type="text" id="cust-name" placeholder="e.g. Rahim Uddin" />
+          </div>
+          <div class="field">
+            <label for="cust-phone">Phone <span class="req">*</span></label
+            ><input type="tel" id="cust-phone" placeholder="e.g. 01712345678" />
+          </div>
+          <div class="field">
+            <label for="cust-address"
+              >Address
+              <span style="color: var(--ink-faint); font-weight: 500"
+                >(optional)</span
+              ></label
+            ><textarea
+              id="cust-address"
+              placeholder="House, road, area, city"
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2><span class="step">3</span> Products</h2>
+          <div id="products"></div>
+          <button type="button" class="btn btn-dashed" id="btn-add">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.4"
+            >
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            Add another product
+          </button>
+          <div class="mini-total">
+            <span>Subtotal (<span id="mini-count">0</span> items)</span
+            ><strong id="mini-subtotal">৳0</strong>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2><span class="step">4</span> Charges &amp; payment</h2>
+          <div class="grid2">
+            <div class="field">
+              <label for="delivery">Delivery charge (৳)</label
+              ><input
+                type="number"
+                id="delivery"
+                min="0"
+                step="any"
+                inputmode="decimal"
+                placeholder="0"
+              />
+            </div>
+            <div class="field">
+              <label for="discount">Discount (৳)</label
+              ><input
+                type="number"
+                id="discount"
+                min="0"
+                step="any"
+                inputmode="decimal"
+                placeholder="0"
+              />
+            </div>
+          </div>
+          <div class="grid2">
+            <div class="field">
+              <label for="paid">Amount paid (৳)</label
+              ><input
+                type="number"
+                id="paid"
+                min="0"
+                step="any"
+                inputmode="decimal"
+                placeholder="0"
+              />
+            </div>
+            <div class="field">
+              <label for="method">Payment method</label>
+              <select id="method">
+                <option>Cash on Delivery</option>
+                <option>bKash</option>
+                <option>Nagad</option>
+                <option>Rocket</option>
+                <option>Bank Transfer</option>
+                <option>Cash</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label for="notes"
+              >Notes
+              <span style="color: var(--ink-faint); font-weight: 500"
+                >(optional)</span
+              ></label
+            ><textarea
+              id="notes"
+              placeholder="e.g. Courier: Pathao · Delivery within 2–3 days"
+            ></textarea>
+          </div>
+        </div>
+
+        <details class="card" id="shop-settings">
+          <summary>Shop details (saved in this browser)</summary>
+          <div class="inner">
+            <div class="field">
+              <label
+                >Logo
+                <span style="color: var(--ink-faint); font-weight: 500"
+                  >(optional, default is the cube mark)</span
+                ></label
+              >
+              <div class="logo-row">
+                <div class="logo-thumb" id="logo-thumb"></div>
+                <div>
+                  <label
+                    class="btn btn-ghost"
+                    style="padding: 8px 12px; font-size: 13px; cursor: pointer"
+                    >Upload logo<input
+                      type="file"
+                      id="shop-logo"
+                      accept="image/*"
+                      hidden
+                  /></label>
+                  <div>
+                    <button
+                      type="button"
+                      class="link-btn"
+                      id="logo-remove"
+                      style="margin-top: 6px; display: none"
+                    >
+                      Remove logo
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="field">
+              <label for="shop-tagline">Tagline</label
+              ><input
+                type="text"
+                id="shop-tagline"
+                placeholder="e.g. Cubes &amp; Puzzles"
+              />
+            </div>
+            <div class="grid2">
+              <div class="field">
+                <label for="shop-phone">Shop phone</label
+                ><input type="tel" id="shop-phone" placeholder="01XXXXXXXXX" />
+              </div>
+              <div class="field">
+                <label for="shop-email">Email / website</label
+                ><input
+                  type="text"
+                  id="shop-email"
+                  placeholder="www.puzzlebazar.com"
+                />
+              </div>
+            </div>
+            <div class="field">
+              <label for="shop-address">Shop address</label
+              ><input
+                type="text"
+                id="shop-address"
+                placeholder="Dhaka, Bangladesh"
+              />
+            </div>
+          </div>
+        </details>
+
+        <div class="actions">
+          <button type="button" class="btn btn-ghost" id="btn-reset">
+            Reset
+          </button>
+          <button type="button" class="btn btn-primary" id="btn-download">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+            >
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            <span id="dl-label">Download invoice PDF</span>
+          </button>
+        </div>
+      </form>
+
+      <!-- ===================== PREVIEW ===================== -->
+      <aside class="preview-col">
+        <div class="preview-head">
+          <h2>Live preview</h2>
+          <span>A4 &middot; PDF</span>
+        </div>
+        <div class="preview-stage" id="stage">
+          <div class="invoice" id="invoice"></div>
+        </div>
+      </aside>
+    </div>
+
+    <div id="toast" role="status"></div>
+
+    <script>
+      (function () {
+        "use strict";
+
+        /* ---------- helpers ---------- */
+        const $ = (s, r = document) => r.querySelector(s);
+        const SHOP_NAME = "Puzzle Bazaar Bangladesh";
+        const CUBE_COLORS = [
+          "#ffffff",
+          "#B7E8E1",
+          "#E0663E",
+          "#B7E8E1",
+          "#079E8D",
+          "#ffffff",
+          "#E0663E",
+          "#ffffff",
+          "#B7E8E1",
+        ];
+
+        const store = {
+          get(k, d) {
+            try {
+              const v = localStorage.getItem(k);
+              return v === null ? d : JSON.parse(v);
+            } catch (e) {
+              return d;
+            }
+          },
+          set(k, v) {
+            try {
+              localStorage.setItem(k, JSON.stringify(v));
+            } catch (e) {}
+          },
+        };
+
+        const esc = (s) =>
+          String(s ?? "").replace(
+            /[&<>"']/g,
+            (c) =>
+              ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#39;",
+              })[c],
+          );
+        const escBr = (s) => esc(s).replace(/\n/g, "<br>");
+        const num = (v) => {
+          const n = parseFloat(v);
+          return isFinite(n) && n > 0 ? n : 0;
+        };
+        const qtyOf = (i) => Math.max(1, parseInt(i.qty, 10) || 1);
+        const money = (n) =>
+          "৳" +
+          Number(n || 0).toLocaleString("en-IN", { maximumFractionDigits: 2 });
+        const uid = () => Math.random().toString(36).slice(2, 9);
+        const todayISO = () => {
+          const d = new Date();
+          return (
+            d.getFullYear() +
+            "-" +
+            String(d.getMonth() + 1).padStart(2, "0") +
+            "-" +
+            String(d.getDate()).padStart(2, "0")
+          );
+        };
+        const fmtDate = (iso) => {
+          if (!iso) return "";
+          const [y, m, d] = iso.split("-").map(Number);
+          return new Date(y, m - 1, d).toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          });
+        };
+
+        function cubeHTML(cls) {
+          return (
+            `<div class="${cls}">` +
+            CUBE_COLORS.map(
+              (c) => `<span style="background:${c}"></span>`,
+            ).join("") +
+            "</div>"
+          );
+        }
+        $("#hdr-cube").innerHTML = CUBE_COLORS.map(
+          (c) => `<span style="background:${c}"></span>`,
+        ).join("");
+
+        let toastTimer;
+        function toast(msg, isError) {
+          const t = $("#toast");
+          t.textContent = msg;
+          t.className = "show" + (isError ? " error" : "");
+          clearTimeout(toastTimer);
+          toastTimer = setTimeout(() => (t.className = ""), 3200);
+        }
+
+        /* ---------- state ---------- */
+        const newItem = () => ({
+          id: uid(),
+          name: "",
+          price: "",
+          qty: 1,
+          img: "",
+        });
+        let items = [newItem()];
+        let logo = store.get("pb_logo", "");
+        let lastSuggested = "";
+
+        /* ---------- image processing ---------- */
+        function readImage(file) {
+          return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+              const img = new Image();
+              img.onload = () => resolve(img);
+              img.onerror = reject;
+              img.src = reader.result;
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+        }
+        // product photo -> centered square crop, 360px JPEG (keeps the PDF small)
+        async function productImage(file) {
+          const img = await readImage(file);
+          const size = 360,
+            s = Math.min(img.width, img.height);
+          const c = document.createElement("canvas");
+          c.width = c.height = size;
+          const ctx = c.getContext("2d");
+          ctx.fillStyle = "#fff";
+          ctx.fillRect(0, 0, size, size);
+          ctx.drawImage(
+            img,
+            (img.width - s) / 2,
+            (img.height - s) / 2,
+            s,
+            s,
+            0,
+            0,
+            size,
+            size,
+          );
+          return c.toDataURL("image/jpeg", 0.88);
+        }
+        // logo -> keep aspect ratio and transparency, max height 160px
+        async function logoImage(file) {
+          const img = await readImage(file);
+          const k = Math.min(1, 160 / img.height, 480 / img.width);
+          const c = document.createElement("canvas");
+          c.width = Math.round(img.width * k);
+          c.height = Math.round(img.height * k);
+          c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+          return c.toDataURL("image/png");
+        }
+
+        /* ---------- invoice number ---------- */
+        function suggestNo() {
+          const c = store.get("pb_counter", 0) + 1;
+          return (
+            "PB-" +
+            todayISO().replace(/-/g, "") +
+            "-" +
+            String(c).padStart(3, "0")
+          );
+        }
+
+        /* ---------- product list (form side) ---------- */
+        function renderProducts() {
+          $("#products").innerHTML = items
+            .map(
+              (it) => `
+      <div class="prod" data-id="${it.id}">
+        <label class="img-drop ${it.img ? "has" : ""}" title="Upload product image">
+          <input type="file" accept="image/*" class="p-file" hidden>
+          ${
+            it.img
+              ? `<img src="${it.img}" alt="">`
+              : `<span class="img-ph"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><small>Photo</small></span>`
+          }
+        </label>
+        <div class="prod-fields">
+          <input type="text" class="p-name" placeholder="Product name" value="${esc(it.name)}">
+          <div class="row2">
+            <div class="money"><span>৳</span><input type="number" class="p-price" min="0" step="any" inputmode="decimal" placeholder="Price" value="${esc(it.price)}"></div>
+            <div class="qty">
+              <button type="button" class="q-minus" aria-label="Decrease quantity">−</button>
+              <input type="number" class="p-qty" min="1" step="1" value="${it.qty}" aria-label="Quantity">
+              <button type="button" class="q-plus" aria-label="Increase quantity">+</button>
+            </div>
+          </div>
+        </div>
+        <button type="button" class="remove" title="Remove product" ${items.length === 1 ? "disabled" : ""}>✕</button>
+      </div>`,
+            )
+            .join("");
+        }
+
+        const productsBox = $("#products");
+        const itemOf = (el) =>
+          items.find((i) => i.id === el.closest(".prod").dataset.id);
+
+        productsBox.addEventListener("input", (e) => {
+          const it = itemOf(e.target);
+          if (!it) return;
+          if (e.target.classList.contains("p-name")) it.name = e.target.value;
+          if (e.target.classList.contains("p-price")) it.price = e.target.value;
+          if (e.target.classList.contains("p-qty")) it.qty = e.target.value;
+          renderInvoice();
+        });
+
+        productsBox.addEventListener("click", (e) => {
+          const btn = e.target.closest("button");
+          if (!btn) return;
+          const row = btn.closest(".prod");
+          const it = itemOf(btn);
+          if (btn.classList.contains("remove") && items.length > 1) {
+            items = items.filter((i) => i.id !== it.id);
+            renderProducts();
+            renderInvoice();
+          }
+          if (
+            btn.classList.contains("q-plus") ||
+            btn.classList.contains("q-minus")
+          ) {
+            const d = btn.classList.contains("q-plus") ? 1 : -1;
+            it.qty = Math.max(1, qtyOf(it) + d);
+            row.querySelector(".p-qty").value = it.qty;
+            renderInvoice();
+          }
+        });
+
+        productsBox.addEventListener("change", async (e) => {
+          if (!e.target.classList.contains("p-file")) return;
+          const file = e.target.files && e.target.files[0];
+          const it = itemOf(e.target);
+          if (!file || !it) return;
+          try {
+            it.img = await productImage(file);
+            renderProducts();
+            renderInvoice();
+          } catch (err) {
+            toast("Could not read that image. Try a JPG or PNG file.", true);
+          }
+        });
+
+        $("#btn-add").addEventListener("click", () => {
+          items.push(newItem());
+          renderProducts();
+          renderInvoice();
+          const rows = productsBox.querySelectorAll(".prod");
+          const last = rows[rows.length - 1];
+          if (last) last.querySelector(".p-name").focus();
+        });
+
+        /* ---------- shop settings ---------- */
+        function shopInfo() {
+          return {
+            tagline: $("#shop-tagline").value.trim(),
+            phone: $("#shop-phone").value.trim(),
+            email: $("#shop-email").value.trim(),
+            address: $("#shop-address").value.trim(),
+          };
+        }
+        function loadShop() {
+          const s = store.get("pb_shop", {
+            tagline: "A Trusted Online Cube Shop",
+            phone: "",
+            email: "",
+            address: "",
+          });
+          $("#shop-tagline").value = s.tagline || "";
+          $("#shop-phone").value = s.phone || "";
+          $("#shop-email").value = s.email || "";
+          $("#shop-address").value = s.address || "";
+          renderLogoThumb();
+        }
+        function renderLogoThumb() {
+          $("#logo-thumb").innerHTML = logo
+            ? `<img src="${logo}" alt="Logo">`
+            : cubeHTML("cube").replace(
+                'class="cube"',
+                'class="cube" style="width:30px;height:30px"',
+              );
+          $("#logo-remove").style.display = logo ? "inline" : "none";
+        }
+        [
+          "#shop-tagline",
+          "#shop-phone",
+          "#shop-email",
+          "#shop-address",
+        ].forEach((sel) => {
+          $(sel).addEventListener("input", () => {
+            store.set("pb_shop", shopInfo());
+            renderInvoice();
+          });
+        });
+        $("#shop-logo").addEventListener("change", async (e) => {
+          const file = e.target.files && e.target.files[0];
+          if (!file) return;
+          try {
+            logo = await logoImage(file);
+            store.set("pb_logo", logo);
+            renderLogoThumb();
+            renderInvoice();
+          } catch (err) {
+            toast("Could not read that logo image.", true);
+          }
+        });
+        $("#logo-remove").addEventListener("click", () => {
+          logo = "";
+          store.set("pb_logo", "");
+          renderLogoThumb();
+          renderInvoice();
+        });
+
+        /* ---------- invoice (preview + PDF source) ---------- */
+        function renderInvoice() {
+          const cust = {
+            name: $("#cust-name").value.trim(),
+            phone: $("#cust-phone").value.trim(),
+            address: $("#cust-address").value.trim(),
+          };
+          const no = $("#inv-no").value.trim();
+          const date = fmtDate($("#inv-date").value);
+          const delivery = num($("#delivery").value);
+          const discount = num($("#discount").value);
+          const paid = num($("#paid").value);
+          const method = $("#method").value;
+          const notes = $("#notes").value.trim();
+          const shop = shopInfo();
+
+          const rows = items.filter((i) => i.name.trim() || num(i.price) > 0);
+          const subtotal = rows.reduce(
+            (a, i) => a + num(i.price) * qtyOf(i),
+            0,
+          );
+          const count = rows.reduce((a, i) => a + qtyOf(i), 0);
+          const total = Math.max(subtotal + delivery - discount, 0);
+          const due = Math.max(total - paid, 0);
+
+          let status = "unpaid",
+            label = "UNPAID";
+          if (total > 0 && paid >= total) {
+            status = "paid";
+            label = "PAID";
+          } else if (paid > 0) {
+            status = "partial";
+            label = "PARTIALLY PAID";
+          }
+
+          $("#mini-count").textContent = count;
+          $("#mini-subtotal").textContent = money(subtotal);
+
+          const logoHTML = logo
+            ? `<div class="inv-logo-chip"><img src="${logo}" alt=""></div>`
+            : `<div class="inv-logo-chip">${cubeHTML("inv-cube")}</div>`;
+
+          const rowsHTML = rows.length
+            ? rows
+                .map(
+                  (i, idx) => `
+      <tr>
+        <td class="c" style="color:#8AA09D;width:30px;">${idx + 1}</td>
+        <td style="width:70px;">${i.img ? `<img class="thumb" src="${i.img}" alt="">` : '<div class="thumb-empty"></div>'}</td>
+        <td class="pname">${esc(i.name.trim()) || '<span class="inv-muted">Untitled product</span>'}</td>
+        <td class="r">${money(num(i.price))}</td>
+        <td class="c">${qtyOf(i)}</td>
+        <td class="r" style="font-weight:700;">${money(num(i.price) * qtyOf(i))}</td>
+      </tr>`,
+                )
+                .join("")
+            : `<tr><td colspan="6" class="inv-empty">Products you add will appear here</td></tr>`;
+
+          const contact = [shop.phone, shop.email, shop.address]
+            .filter(Boolean)
+            .map(esc)
+            .join(" &nbsp;•&nbsp; ");
+
+          $("#invoice").innerHTML = `
+      <div class="inv-top">
+        <div class="inv-brand">
+          <img src="favcon.png" width="50" height="50">
+          <div>
+            <div class="inv-shop">${SHOP_NAME}</div>
+            ${shop.tagline ? `<div class="inv-tag">${esc(shop.tagline)}</div>` : ""} 
+          </div> 
+        </div>
+        <div class="inv-title">
+          <div class="inv-word">INVOICE</div>
+          <div class="inv-no">${no ? "#" + esc(no) : ""}</div>
+        </div>
+      </div>
+
+      <div class="inv-body">
+        <div class="inv-meta">
+          <div class="inv-meta-box" style="flex:1.5;">
+            <div class="inv-label">Billed to</div>
+            <div class="v ${cust.name ? "" : "inv-muted"}">${cust.name ? esc(cust.name) : "Customer name"}</div>
+            <div class="s ${cust.phone ? "" : "inv-muted"}">${cust.phone ? esc(cust.phone) : "Phone number"}</div>
+            ${cust.address ? `<div class="s">${escBr(cust.address)}</div>` : ""}
+          </div>
+          <div class="inv-meta-box">
+            <div class="inv-label">Invoice date</div>
+            <div class="v">${esc(date)}</div>
+            <div class="s">${rows.length} product${rows.length === 1 ? "" : "s"} &middot; ${count} item${count === 1 ? "" : "s"}</div>
+          </div>
+          <div class="inv-meta-box">
+            <div class="inv-label">Payment</div>
+            <div class="v">${esc(method)}</div>
+            <span class="badge ${status}">${label}</span>
+          </div>
+        </div>
+
+        <table class="inv-table">
+          <thead>
+            <tr>
+              <th class="c">#</th><th>Image</th><th>Product</th>
+              <th class="r">Unit price</th><th class="c">Qty</th><th class="r">Amount</th>
+            </tr>
+          </thead>
+          <tbody>${rowsHTML}</tbody>
+        </table>
+
+        <div class="inv-lower avoid-break">
+          <div class="inv-notes">
+            ${notes ? `<div class="inv-label">Notes</div><div class="txt">${escBr(notes)}</div>` : ""}
+          </div>
+          <div class="totals">
+            <div class="t-row"><span>Subtotal</span><b>${money(subtotal)}</b></div>
+            ${delivery ? `<div class="t-row"><span>Delivery charge</span><b>${money(delivery)}</b></div>` : ""}
+            ${discount ? `<div class="t-row"><span>Discount</span><b>− ${money(discount)}</b></div>` : ""}
+            <div class="t-grand"><span>Total</span><span>${money(total)}</span></div>
+            <div class="t-row"><span>Amount paid</span><b>${money(paid)}</b></div>
+            <div class="t-due ${due === 0 ? "clear" : ""}"><span>Balance due</span><span>${money(due)}</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="inv-footer avoid-break">
+        <div class="inv-thanks">
+          <div class="t1">Thank you for shopping with ${SHOP_NAME}!</div>
+          <div class="t2">আপনার কেনাকাটার জন্য ধন্যবাদ।</div>
+          ${contact ? `<div class="inv-contact">${contact}</div>` : ""}
+          <div class="inv-auto">This is a computer-generated invoice.</div>
+        </div>
+      </div>`;
+
+          fitPreview();
+        }
+
+        /* ---------- scale the A4 preview to fit its column ---------- */
+        function fitPreview() {
+          const stage = $("#stage"),
+            inv = $("#invoice");
+          const s = Math.min(1, stage.clientWidth / inv.offsetWidth);
+          inv.style.transformOrigin = "top left";
+          inv.style.transform = "scale(" + s + ")";
+          stage.style.height = inv.offsetHeight * s + "px";
+        }
+        window.addEventListener("resize", fitPreview);
+        if ("ResizeObserver" in window)
+          new ResizeObserver(fitPreview).observe($("#stage"));
+        if (document.fonts && document.fonts.ready)
+          document.fonts.ready.then(fitPreview);
+
+        /* ---------- live updates from simple inputs ---------- */
+        [
+          "#inv-no",
+          "#inv-date",
+          "#cust-name",
+          "#cust-phone",
+          "#cust-address",
+          "#delivery",
+          "#discount",
+          "#paid",
+          "#method",
+          "#notes",
+        ].forEach((sel) => {
+          $(sel).addEventListener("input", () => {
+            $(sel).classList.remove("invalid");
+            renderInvoice();
+          });
+          $(sel).addEventListener("change", renderInvoice);
+        });
+
+        /* ---------- validation ---------- */
+        function fail(msg, sel) {
+          toast(msg, true);
+          if (sel) {
+            const el = $(sel);
+            el.classList.add("invalid");
+            el.focus();
+          }
+          return false;
+        }
+        function validate() {
+          if (!$("#cust-name").value.trim())
+            return fail("Please enter the customer name.", "#cust-name");
+          if (!$("#cust-phone").value.trim())
+            return fail(
+              "Please enter the customer phone number.",
+              "#cust-phone",
+            );
+          const ok = items.filter((i) => i.name.trim() && num(i.price) > 0);
+          if (!ok.length)
+            return fail("Add at least one product with a name and a price.");
+          return true;
+        }
+
+        /* ---------- PDF download ---------- */
+        async function download() {
+          if (!validate()) return;
+          if (typeof html2pdf === "undefined") {
+            toast(
+              "PDF library could not load. Check your internet connection and reload.",
+              true,
+            );
+            return;
+          }
+          const btn = $("#btn-download"),
+            label = $("#dl-label");
+          btn.disabled = true;
+          label.textContent = "Generating PDF…";
+          try {
+            if (document.fonts && document.fonts.ready)
+              await document.fonts.ready;
+
+            const clone = $("#invoice").cloneNode(true);
+            clone.removeAttribute("id");
+            clone.style.transform = "none";
+            clone.style.transformOrigin = "";
+
+            const no = $("#inv-no").value.trim() || "invoice";
+            const fileName =
+              "Invoice-" + no.replace(/[^a-z0-9\-_]+/gi, "_") + ".pdf";
+
+            await html2pdf()
+              .set({
+                margin: 0,
+                filename: fileName,
+                image: { type: "jpeg", quality: 0.98 },
+                html2canvas: {
+                  scale: 2,
+                  useCORS: true,
+                  backgroundColor: "#ffffff",
+                  scrollX: 0,
+                  scrollY: 0,
+                },
+                jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+                pagebreak: {
+                  mode: ["css", "legacy"],
+                  avoid: ["tr", ".avoid-break"],
+                },
+              })
+              .from(clone)
+              .save();
+
+            // advance the invoice number only if the user kept the suggested one
+            if (no === lastSuggested) {
+              store.set("pb_counter", store.get("pb_counter", 0) + 1);
+              lastSuggested = suggestNo();
+              $("#inv-no").value = lastSuggested;
+              renderInvoice();
+            }
+            toast("Invoice downloaded ✓");
+          } catch (err) {
+            console.error(err);
+            toast(
+              "Something went wrong while creating the PDF. Please try again.",
+              true,
+            );
+          } finally {
+            btn.disabled = false;
+            label.textContent = "Download invoice PDF";
+          }
+        }
+        $("#btn-download").addEventListener("click", download);
+
+        /* ---------- reset ---------- */
+        function resetForm() {
+          [
+            "#cust-name",
+            "#cust-phone",
+            "#cust-address",
+            "#delivery",
+            "#discount",
+            "#paid",
+            "#notes",
+          ].forEach((s) => {
+            $(s).value = "";
+            $(s).classList.remove("invalid");
+          });
+          $("#method").selectedIndex = 0;
+          $("#inv-date").value = todayISO();
+          lastSuggested = suggestNo();
+          $("#inv-no").value = lastSuggested;
+          items = [newItem()];
+          renderProducts();
+          renderInvoice();
+        }
+        $("#btn-reset").addEventListener("click", () => {
+          if (confirm("Clear the whole form and start a new invoice?"))
+            resetForm();
+        });
+
+        /* ---------- init ---------- */
+        loadShop();
+        $("#inv-date").value = todayISO();
+        lastSuggested = suggestNo();
+        $("#inv-no").value = lastSuggested;
+        renderProducts();
+        renderInvoice();
+      })();
+    </script>
+  </body>
+</html>
